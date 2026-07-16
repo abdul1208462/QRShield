@@ -1,17 +1,70 @@
 import streamlit as st
 import cv2
 import numpy as np
-from pyzbar.pyzbar import decode
 from PIL import Image
 import validators
 import re
+import pandas as pd
+import os
+from reportlab.platypus import SimpleDocTemplate, Paragraph
+from reportlab.lib.styles import getSampleStyleSheet
+from datetime import datetime
 
 st.set_page_config(
     page_title="QRShield",
     page_icon="🛡",
     layout="wide"
 )
+st.markdown("""
+<style>
 
+.main{
+background:#0f172a;
+}
+
+.block-container{
+padding-top:2rem;
+}
+
+.stButton>button{
+background:#00c853;
+color:white;
+border-radius:12px;
+height:50px;
+width:100%;
+font-size:18px;
+font-weight:bold;
+transition:0.3s;
+}
+
+.stButton>button:hover{
+background:#00e676;
+transform:scale(1.03);
+}
+
+[data-testid="stMetric"]{
+background:#1e293b;
+padding:15px;
+border-radius:15px;
+box-shadow:0px 0px 15px rgba(0,255,170,.2);
+}
+
+.stAlert{
+border-radius:15px;
+}
+
+</style>
+""", unsafe_allow_html=True)
+HISTORY_FILE = "scan_history.csv"
+
+if not os.path.exists(HISTORY_FILE):
+    df = pd.DataFrame(columns=[
+        "Date",
+        "URL",
+        "Risk Score",
+        "Status"
+    ])
+    df.to_csv(HISTORY_FILE, index=False)
 st.markdown("""
 <style>
 
@@ -41,7 +94,15 @@ font-weight:bold;
 </style>
 """, unsafe_allow_html=True)
 
-st.title("🛡 QRShield")
+st.markdown("""
+<h1 style='text-align:center;color:#00e676;'>
+🛡 QRShield
+</h1>
+
+<h4 style='text-align:center;color:white;'>
+AI Powered Fake QR Code Detector
+</h4>
+""", unsafe_allow_html=True)
 st.write("### Fake QR Code Detector")
 if "total_scans" not in st.session_state:
     st.session_state.total_scans = 0
@@ -57,6 +118,27 @@ with col1:
 with col2:
     st.metric("🚨 Dangerous", st.session_state.dangerous_scans)
 
+    
+with st.sidebar:
+
+    st.title("🛡 QRShield")
+
+    st.markdown("---")
+
+    st.info(
+        "Upload a QR code to check if it is safe or potentially malicious."
+    )
+
+    st.markdown("### Features")
+    st.write("✅ QR Code Scanner")
+    st.write("✅ URL Validation")
+    st.write("✅ Threat Analysis")
+    st.write("✅ Risk Score")
+    st.write("✅ PDF Report")
+    st.write("✅ Scan History")
+
+    st.markdown("---")
+    st.caption("Version 1.0")
 uploaded = st.file_uploader(
     "Upload QR Code",
     type=["png","jpg","jpeg"]
@@ -70,22 +152,28 @@ if uploaded:
 
     img=np.array(image)
 
-    decoded=decode(img)
+    
 
-    if decoded:
-        st.session_state.total_scans += 1
+    image_np = np.array(image)
 
-        qr_data=decoded[0].data.decode()
+detector = cv2.QRCodeDetector()
 
-        st.markdown('<div class="card">',unsafe_allow_html=True)
+qr_data, points, _ = detector.detectAndDecode(image_np)
 
-        st.subheader("Decoded Data")
+if qr_data:
+    st.success("✅ QR Code Detected")
+else:
+    st.error("❌ No QR code found.")
 
-        st.code(qr_data)
+    st.markdown('<div class="card">',unsafe_allow_html=True)
 
-        st.markdown("</div>",unsafe_allow_html=True)
+    st.subheader("Decoded Data")
 
-        if validators.url(qr_data):
+    st.code(qr_data)
+
+    st.markdown("</div>",unsafe_allow_html=True)
+
+if validators.url(qr_data):
 
             st.success("Valid URL Detected")
 
@@ -130,9 +218,12 @@ if uploaded:
 
             st.subheader("Risk Score")
 
-            
-
+        
             st.progress(score / 100)
+            st.metric(
+    "Overall Risk",
+    f"{score}/100"
+)
 
             col1, col2 = st.columns(2)
 
@@ -147,48 +238,76 @@ if uploaded:
                 else:
                     st.metric("Threat Level", "🔴 High")
 
-            # Summary badge and dangerous count
             if score < 25:
-                st.success("SAFE")
-            elif score < 60:
-                st.warning("WARNING")
-            else:
-                st.error("DANGEROUS")
-                st.session_state.dangerous_scans += 1
+             status = "SAFE"
+             st.success("🟢 SAFE")
 
-            st.subheader("Threat Analysis")
-            with st.expander("🔍 View Threat Details"):
+            elif score < 60:
+              status = "WARNING"
+              st.warning("🟡 WARNING")
+
+            else:
+             status = "DANGEROUS"
+            st.error("🔴 DANGEROUS")
+
+new_scan = pd.DataFrame([{
+    "Date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+    "URL": qr_data,
+    "Risk Score": score,
+    "Status": status
+}])
+
+history = pd.read_csv(HISTORY_FILE)
+history = pd.concat([history, new_scan], ignore_index=True)
+history.to_csv(HISTORY_FILE, index=False)
+st.session_state.dangerous_scans += 1
+
+st.subheader("Threat Analysis")
+with st.expander("🔍 View Threat Details"):
                 if reasons:
                     for r in reasons:
                         st.error(r)
                 else:
                     st.success("✅ No suspicious indicators detected.")
+                    st.subheader("🛡 Recommendation")
 
-            st.subheader("🛡 Recommendation")
-
-            if score < 25:
-                st.success(
+                if score < 25:
+                   st.success(
                     "This QR code appears safe. No major phishing indicators were detected."
                 )
-            elif score < 60:
-                st.warning(
+                elif score < 60:
+                 st.warning(
                     "Be careful. Verify the website before entering any personal information."
                 )
-            else:
-                st.error(
+                else:
+                 st.error(
                     "High-risk QR code detected. Do not enter passwords, OTPs, or banking details."
                 )
 
-            if reasons:
-                for r in reasons:
-                    st.error(r)
-            else:
-                st.write("✅ No suspicious indicators found.")
+                if reasons:
+                 for r in reasons:
+                  st.error(r)
+                else:
+                 st.write("✅ No suspicious indicators found.")
 
-        else:
+                
+                st.error("QR code does not contain a valid URL.")
 
-            st.error("QR code does not contain a valid URL.")
+                
+                st.error("No QR code detected.")
+                st.divider()
+                
 
-    else:
+st.subheader("📜 Scan History")
 
-        st.error("No QR code detected.")
+history = pd.read_csv(HISTORY_FILE)
+
+st.dataframe(history.tail(10), use_container_width=True)
+with open(HISTORY_FILE, "rb") as file:
+
+    st.download_button(
+        label="⬇ Download Scan History",
+        data=file,
+        file_name="scan_history.csv",
+        mime="text/csv"
+    )

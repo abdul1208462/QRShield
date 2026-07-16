@@ -1,6 +1,6 @@
 streamlit
 opencv-python-headless
-pyzbar
+numpy
 Pillow
 pandas
 reportlab
