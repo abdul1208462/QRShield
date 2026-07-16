@@ -1,0 +1,8 @@
+streamlit
+opencv-python
+pyzbar
+Pillow
+pandas
+reportlab
+validators
+reportlab
