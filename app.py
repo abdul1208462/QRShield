@@ -170,7 +170,7 @@ if uploaded:
 
     st.markdown("</div>",unsafe_allow_html=True)
 
-if validators.url(qr_data):
+    if validators.url(qr_data):
 
             st.success("Valid URL Detected")
 
@@ -245,7 +245,7 @@ if validators.url(qr_data):
 
             else:
              status = "DANGEROUS"
-            st.error("🔴 DANGEROUS")
+             st.error("🔴 DANGEROUS")
 
 new_scan = pd.DataFrame([{
     "Date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
