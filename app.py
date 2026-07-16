@@ -247,52 +247,48 @@ if uploaded:
              status = "DANGEROUS"
              st.error("🔴 DANGEROUS")
 
-new_scan = pd.DataFrame([{
-    "Date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-    "URL": qr_data,
-    "Risk Score": score,
-    "Status": status
+            new_scan = pd.DataFrame([{
+            "Date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "URL": qr_data,
+            "Risk Score": score,
+            "Status": status
 }])
 
-history = pd.read_csv(HISTORY_FILE)
-history = pd.concat([history, new_scan], ignore_index=True)
-history.to_csv(HISTORY_FILE, index=False)
-st.session_state.dangerous_scans += 1
+            history = pd.read_csv(HISTORY_FILE)
+            history = pd.concat([history, new_scan], ignore_index=True)
+            history.to_csv(HISTORY_FILE, index=False)
+            st.session_state.total_scans += 1
 
-st.subheader("Threat Analysis")
-with st.expander("🔍 View Threat Details"):
+            if status == "DANGEROUS":
+                st.session_state.dangerous_scans += 1
+
+            st.subheader("Threat Analysis")
+
+            with st.expander("🔍 View Threat Details"):
+
                 if reasons:
                     for r in reasons:
                         st.error(r)
                 else:
                     st.success("✅ No suspicious indicators detected.")
-                    st.subheader("🛡 Recommendation")
+
+                st.subheader("🛡 Recommendation")
 
                 if score < 25:
-                   st.success(
-                    "This QR code appears safe. No major phishing indicators were detected."
-                )
+                    st.success(
+                        "This QR code appears safe. No major phishing indicators were detected."
+                    )
                 elif score < 60:
-                 st.warning(
-                    "Be careful. Verify the website before entering any personal information."
-                )
+                    st.warning(
+                        "Be careful. Verify the website before entering any personal information."
+                    )
                 else:
-                 st.error(
-                    "High-risk QR code detected. Do not enter passwords, OTPs, or banking details."
-                )
+                    st.error(
+                        "High-risk QR code detected. Do not enter passwords, OTPs, or banking details."
+                    )
 
-                if reasons:
-                 for r in reasons:
-                  st.error(r)
-                else:
-                 st.write("✅ No suspicious indicators found.")
-
-                
-                st.error("QR code does not contain a valid URL.")
-
-                
-                st.error("No QR code detected.")
-                st.divider()
+    else:
+        st.error("❌ QR code does not contain a valid URL.")
                 
 
 st.subheader("📜 Scan History")
