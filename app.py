@@ -150,11 +150,14 @@ if uploaded:
 
     st.image(image, width=300)
 
-    image_np = np.array(image)
+    image_np = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
 
     detector = cv2.QRCodeDetector()
 
     qr_data, points, _ = detector.detectAndDecode(image_np)
+
+    st.write("Decoded:", qr_data)
+    st.write("Points:", points)
 
     if qr_data:
         st.success("✅ QR Code Detected")
