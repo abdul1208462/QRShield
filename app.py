@@ -148,22 +148,19 @@ if uploaded:
 
     image = Image.open(uploaded)
 
-    st.image(image,width=300)
-
-    img=np.array(image)
-
-    
+    st.image(image, width=300)
 
     image_np = np.array(image)
 
-detector = cv2.QRCodeDetector()
+    detector = cv2.QRCodeDetector()
 
-qr_data, points, _ = detector.detectAndDecode(image_np)
+    qr_data, points, _ = detector.detectAndDecode(image_np)
 
-if qr_data:
-    st.success("✅ QR Code Detected")
-else:
-    st.error("❌ No QR code found.")
+    if qr_data:
+        st.success("✅ QR Code Detected")
+    else:
+        st.error("❌ No QR Code Found")
+        st.stop()
 
     st.markdown('<div class="card">',unsafe_allow_html=True)
 
