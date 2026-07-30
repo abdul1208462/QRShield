@@ -80,4 +80,3 @@ QRShield/
 This is a project I built to learn and to raise awareness about QR phishing — it uses basic rule-based checks, not a real security engine. It's an educational / awareness tool, not a guaranteed security scanner. Always use your own judgment before opening a link or entering personal information.
 └── README.md
 
-## Project Structure
