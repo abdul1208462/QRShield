@@ -156,8 +156,7 @@ if uploaded:
 
     qr_data, points, _ = detector.detectAndDecode(image_np)
 
-    st.write("Decoded:", qr_data)
-    st.write("Points:", points)
+    
 
     if qr_data:
         st.success("✅ QR Code Detected")
