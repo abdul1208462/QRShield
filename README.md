@@ -67,10 +67,13 @@ Then open the local URL Streamlit prints (usually http://localhost:8501).
 
 ## Project Structure
 
+```
 QRShield/
-├── app.py # Main Streamlit application
-├── requirements.txt # Python dependencies
-├── scan_history.csv # Auto-generated scan log (gitignored)
+├── app.py              # Main Streamlit application
+├── requirements.txt    # Python dependencies
+├── scan_history.csv    # Auto-generated scan log (gitignored)
+└── README.md           # Project documentation
+```
 
 ## A Note
 
