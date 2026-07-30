@@ -63,6 +63,6 @@ https://qrshield-4appdljywhquiciuwraralh.streamlit.app/
 A note
 This is a project I built to learn and to raise awareness about QR phishing — it uses basic rule-based checks, not a real security engine.
 Treat it as a helper, not a guarantee. Always use your own judgment before opening a link or typing in any personal info.
-⚠️ Disclaimer
+
 
 QRShield uses heuristic checks and is meant as an educational / awareness tool. It is not a guaranteed security scanner — always use your own judgment before visiting any link or entering personal information.
